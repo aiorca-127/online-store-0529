@@ -95,6 +95,15 @@
 
         button:hover { background-color: #2980b9; }
         
+        /* NEW: Style for the "Sold Out" disabled button */
+        button:disabled {
+            background-color: #95a5a6; /* Gray color */
+            cursor: not-allowed;
+        }
+        button:disabled:hover {
+            background-color: #95a5a6; /* Stays gray when hovering */
+        }
+        
         .remove-btn {
             background-color: #e74c3c;
             padding: 5px 10px;
@@ -102,6 +111,7 @@
             margin-left: 10px;
         }
         .remove-btn:hover { background-color: #c0392b; }
+        .remove-btn:disabled { display: none; /* Hide remove button if disabled */ }
 
         /* Cart Styling */
         #cart-items {
@@ -157,19 +167,19 @@
             <div class="products-grid">
                 
                 <div class="product-card">
-                    <img src="https://image.made-in-china.com/202f0j00aHMqCzvWsTrL/Cute-Dalmatian-Doll-Big-Eared-Dog-Cartoon-Poodle-Doll.jpg" alt="Fluffy Dalmatian Doll">
-                    <h3>Fluffy Dalmatian</h3>
-                    <p>A super soft, big-eared puppy doll. Perfect for hugging!</p>
-                    <p class="price">$18.50</p>
-                    <button onclick="addToCart('Fluffy Dalmatian', 18.50)">Add to Cart</button>
+                    <img src="https://mall.iopenmall.tw/website/uploads_product/website_8790/P0879013013748_4_140123669.jpeg?hash=66561" alt="Mimikyu doll *You can only buy one">
+                    <h3>Mimikyu doll</h3>
+                    <p>A super cute and furry doll. Perfect for hugging!</p>
+                    <p class="price">$100</p>
+                    <button id="btn-mimikyu" onclick="addToCart('Mimikyu doll', 100, 'btn-mimikyu')">Add to Cart</button>
                 </div>
 
                 <div class="product-card">
-                    <img src="https://m.media-amazon.com/images/I/619e8BkmsGL._AC_UF894,1000_QL80_.jpg" alt="Elegant White Bunny">
-                    <h3>Elegant White Bunny</h3>
-                    <p>A beautiful white rabbit plush with long floppy ears and a cute bow.</p>
-                    <p class="price">$22.00</p>
-                    <button onclick="addToCart('Elegant White Bunny', 22.00)">Add to Cart</button>
+                    <img src="https://cf.shopee.tw/file/tw-11134207-81ztn-mglkb4gtzu329e" alt="Pokemon squishy **You can only buy one">
+                    <h3>Pokemon squishy</h3>
+                    <p>A squishy toy that reliefs you.</p>
+                    <p class="price">$100</p>
+                    <button id="btn-squishy" onclick="addToCart('Pokemon squishy', 100, 'btn-squishy')">Add to Cart</button>
                 </div>
 
             </div>
@@ -219,24 +229,40 @@
         // This array will hold the items the user clicks
         let shoppingCart = [];
 
-        // Function 1: Add item to cart
-        function addToCart(itemName, itemPrice) {
+        // Function 1: Add item to cart (NOW ACCEPTS BUTTON ID)
+        function addToCart(itemName, itemPrice, buttonId) {
             // Check if the item is already in the cart
             let existingItem = shoppingCart.find(item => item.name === itemName);
             
-            if (existingItem) {
-                existingItem.quantity += 1; // Increase amount
-            } else {
-                shoppingCart.push({ name: itemName, price: itemPrice, quantity: 1 }); // Add new item
+            // If it is NOT in the cart, add it (enforces the "only buy one" rule)
+            if (!existingItem) {
+                // Notice we save the buttonId so we know which button belongs to this item
+                shoppingCart.push({ name: itemName, price: itemPrice, quantity: 1, btnId: buttonId }); 
+                
+                // Change the button to "Sold Out" and make it gray/unclickable
+                let btn = document.getElementById(buttonId);
+                btn.innerText = "Sold Out";
+                btn.disabled = true;
+                
+                updateCartDisplay();
             }
-            
-            updateCartDisplay();
         }
 
         // Function 2: Remove item from cart
         function removeFromCart(itemName) {
-            shoppingCart = shoppingCart.filter(item => item.name !== itemName);
-            updateCartDisplay();
+            // First, find the item in the cart so we know which button to reset
+            let itemToRemove = shoppingCart.find(item => item.name === itemName);
+            
+            if (itemToRemove) {
+                // Reset the button back to "Add to Cart"
+                let btn = document.getElementById(itemToRemove.btnId);
+                btn.innerText = "Add to Cart";
+                btn.disabled = false;
+                
+                // Remove it from the cart array
+                shoppingCart = shoppingCart.filter(item => item.name !== itemName);
+                updateCartDisplay();
+            }
         }
 
         // Function 3: Update the screen and do the math
@@ -262,10 +288,8 @@
                 let itemTotal = item.price * item.quantity;
                 grandTotal += itemTotal;
                 
-                // Add to email text
                 textForEmail += `- ${item.quantity}x ${item.name} ($${itemTotal.toFixed(2)})\\n`;
 
-                // Add to webpage list
                 let li = document.createElement('li');
                 li.innerHTML = `
                     <span><b>${item.quantity}x</b> ${item.name}</span>
@@ -292,6 +316,10 @@
                 alert("Your cart is empty! Please add some cute dolls first.");
             }
         });
+    </script>
+
+</body>
+</html>
     </script>
 
 </body>
