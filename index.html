@@ -95,7 +95,6 @@
 
         button:hover { background-color: #2980b9; }
         
-        /* NEW: Style for the "Sold Out" disabled button */
         button:disabled {
             background-color: #95a5a6; /* Gray color */
             cursor: not-allowed;
@@ -111,7 +110,7 @@
             margin-left: 10px;
         }
         .remove-btn:hover { background-color: #c0392b; }
-        .remove-btn:disabled { display: none; /* Hide remove button if disabled */ }
+        .remove-btn:disabled { display: none; }
 
         /* Cart Styling */
         #cart-items {
@@ -149,8 +148,20 @@
         .checkout-btn { width: 100%; font-size: 1.1rem; padding: 15px; background-color: #2ecc71; }
         .checkout-btn:hover { background-color: #27ae60; }
         
-        /* Hidden input for Formspree */
         #cart-data { display: none; }
+
+        /* NEW: Success Message Styling */
+        #success-message {
+            display: none;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid #c3e6cb;
+            text-align: center;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -200,6 +211,8 @@
 
             <h3>Checkout Details</h3>
             
+            <div id="success-message">🎉 Order placed successfully! Check your email.</div>
+
             <form action="https://formspree.io/f/xgoqqwkg" method="POST" id="order-form">
                 
                 <div class="form-group">
@@ -219,27 +232,21 @@
 
                 <textarea id="cart-data" name="Order Details"></textarea>
 
-                <button type="submit" class="checkout-btn">Place Order</button>
+                <button type="submit" class="checkout-btn" id="submit-btn">Place Order</button>
             </form>
         </div>
 
     </div>
 
     <script>
-        // This array will hold the items the user clicks
         let shoppingCart = [];
 
-        // Function 1: Add item to cart (NOW ACCEPTS BUTTON ID)
         function addToCart(itemName, itemPrice, buttonId) {
-            // Check if the item is already in the cart
             let existingItem = shoppingCart.find(item => item.name === itemName);
             
-            // If it is NOT in the cart, add it (enforces the "only buy one" rule)
             if (!existingItem) {
-                // Notice we save the buttonId so we know which button belongs to this item
                 shoppingCart.push({ name: itemName, price: itemPrice, quantity: 1, btnId: buttonId }); 
                 
-                // Change the button to "Sold Out" and make it gray/unclickable
                 let btn = document.getElementById(buttonId);
                 btn.innerText = "Sold Out";
                 btn.disabled = true;
@@ -248,33 +255,27 @@
             }
         }
 
-        // Function 2: Remove item from cart
         function removeFromCart(itemName) {
-            // First, find the item in the cart so we know which button to reset
             let itemToRemove = shoppingCart.find(item => item.name === itemName);
             
             if (itemToRemove) {
-                // Reset the button back to "Add to Cart"
                 let btn = document.getElementById(itemToRemove.btnId);
                 btn.innerText = "Add to Cart";
                 btn.disabled = false;
                 
-                // Remove it from the cart array
                 shoppingCart = shoppingCart.filter(item => item.name !== itemName);
                 updateCartDisplay();
             }
         }
 
-        // Function 3: Update the screen and do the math
         function updateCartDisplay() {
             const cartList = document.getElementById('cart-items');
             const totalDisplay = document.getElementById('cart-total');
             const hiddenCartData = document.getElementById('cart-data');
             
-            // Clear current list
             cartList.innerHTML = '';
             let grandTotal = 0;
-            let textForEmail = "ORDER SUMMARY:\\n\\n"; // This goes to your email
+            let textForEmail = "ORDER SUMMARY:\\n\\n"; 
 
             if (shoppingCart.length === 0) {
                 cartList.innerHTML = '<li style="color: #7f8c8d;">Your cart is empty.</li>';
@@ -283,7 +284,6 @@
                 return;
             }
 
-            // Loop through the cart and build the HTML and the Math
             shoppingCart.forEach(item => {
                 let itemTotal = item.price * item.quantity;
                 grandTotal += itemTotal;
@@ -301,25 +301,69 @@
                 cartList.appendChild(li);
             });
 
-            // Update Total Price on screen
             totalDisplay.innerText = `Total: $${grandTotal.toFixed(2)}`;
-            
-            // Update hidden form field so Formspree emails you the cart contents and total
             textForEmail += `\\nGRAND TOTAL: $${grandTotal.toFixed(2)}`;
             hiddenCartData.value = textForEmail;
         }
 
-        // Make sure the form can't be submitted if the cart is empty
-        document.getElementById('order-form').addEventListener('submit', function(event) {
-            if (shoppingCart.length === 0) {
-                event.preventDefault(); // Stop the form from sending
-                alert("Your cart is empty! Please add some cute dolls first.");
-            }
-        });
-    </script>
+        // NEW: Intercept the form submission to prevent redirecting
+        const form = document.getElementById('order-form');
+        
+        form.addEventListener('submit', function(event) {
+            // 1. Stop the default behavior (which causes the redirect)
+            event.preventDefault(); 
 
-</body>
-</html>
+            if (shoppingCart.length === 0) {
+                alert("Your cart is empty! Please add some cute dolls first.");
+                return; // Stop here if cart is empty
+            }
+
+            // 2. Change button text so user knows it is loading
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.innerText = "Sending Order...";
+            submitBtn.disabled = true;
+
+            // 3. Send the data silently in the background using fetch()
+            const data = new FormData(form);
+            
+            fetch(form.action, {
+                method: form.method,
+                body: data,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    // 4. Success! Show message, clear cart, reset form
+                    document.getElementById('success-message').style.display = 'block';
+                    form.reset();
+                    
+                    // Reset all product buttons
+                    shoppingCart.forEach(item => {
+                        let btn = document.getElementById(item.btnId);
+                        btn.innerText = "Add to Cart";
+                        btn.disabled = false;
+                    });
+                    
+                    shoppingCart = [];
+                    updateCartDisplay();
+
+                    // Hide the success message after 5 seconds
+                    setTimeout(() => {
+                        document.getElementById('success-message').style.display = 'none';
+                    }, 5000);
+                    
+                } else {
+                    alert("Oops! There was a problem submitting your order.");
+                }
+            }).catch(error => {
+                alert("Oops! There was a problem submitting your order.");
+            }).finally(() => {
+                // Restore the submit button
+                submitBtn.innerText = "Place Order";
+                submitBtn.disabled = false;
+            });
+        });
     </script>
 
 </body>
