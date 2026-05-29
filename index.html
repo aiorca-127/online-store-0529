@@ -3,199 +3,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orca's Store</title>
+    <title>Orca's Store - Cute Dolls</title>
     <style>
-        /* CSS: Styling our website */
+        /* --- CSS: STYLING THE WEBSITE --- */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
+            background-color: #f0f8ff; /* Alice Blue background */
             color: #333;
         }
 
         header {
-            background-color: #1a5276; /* Changed to a nice ocean blue for Orca! */
+            background-color: #1a5276; /* Orca Blue */
             color: white;
             text-align: center;
-            padding: 1.5rem 0;
+            padding: 2rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* Product Section Styles */
-        .products {
+        /* Layout for Desktop: Products on left, Cart on right */
+        .main-container {
             display: flex;
-            flex-wrap: wrap; /* This allows products to wrap to the next line if there are many */
+            flex-wrap: wrap;
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 0 20px;
+            gap: 30px;
+        }
+
+        .products-section {
+            flex: 2; /* Takes up more space */
+            min-width: 300px;
+        }
+
+        .cart-section {
+            flex: 1; /* Takes up less space */
+            min-width: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            align-self: flex-start; /* Keeps it at the top */
+        }
+
+        /* Product Cards */
+        .products-grid {
+            display: flex;
+            flex-wrap: wrap;
             gap: 20px;
-            margin-bottom: 40px;
-            justify-content: center;
         }
 
         .product-card {
             background: white;
             border-radius: 8px;
-            padding: 20px;
-            width: 100%;
-            max-width: 250px; /* Keeps the cards a nice size */
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 15px;
+            width: calc(50% - 10px); /* 2 items per row */
+            box-sizing: border-box;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             text-align: center;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
         }
 
         .product-card img {
             width: 100%;
-            height: 180px;
-            object-fit: cover; /* Keeps images looking neat */
-            border-radius: 4px;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 10px;
         }
 
         .price {
-            font-size: 1.2rem;
-            color: #27ae60;
+            font-size: 1.3rem;
+            color: #e67e22; /* Warm orange for price */
             font-weight: bold;
+            margin: 10px 0;
         }
 
-        /* Order Form Styles */
-        .order-section {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            max-width: 600px;
-            margin: 0 auto; /* Centers the form */
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
+        /* Buttons */
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
             font-weight: bold;
+            transition: 0.2s;
         }
 
-        input, select, textarea {
+        button:hover { background-color: #2980b9; }
+        
+        .remove-btn {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+        .remove-btn:hover { background-color: #c0392b; }
+
+        /* Cart Styling */
+        #cart-items {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        #cart-items li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-total {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: right;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        /* Form Styling */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
         }
-
-        button {
-            background-color: #3498db;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 1rem;
-            font-weight: bold;
-        }
-
-        button:hover {
-            background-color: #2980b9;
-        }
+        .checkout-btn { width: 100%; font-size: 1.1rem; padding: 15px; background-color: #2ecc71; }
+        .checkout-btn:hover { background-color: #27ae60; }
+        
+        /* Hidden input for Formspree */
+        #cart-data { display: none; }
     </style>
 </head>
 <body>
 
     <header>
         <h1>Orca's Store</h1>
-        <p>Your favorite budget-friendly stationery!</p>
+        <p>The softest, cutest plush dolls in town!</p>
     </header>
 
-    <div class="container">
-        <h2>Our Products</h2>
-        <div class="products">
-            
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1531346878377-a541e4a0ecce?w=400&q=80" alt="Classic Notebook">
-                <div>
-                    <h3>Classic Notebook</h3>
-                    <p>A high-quality 200-page lined notebook for all your class notes.</p>
+    <div class="main-container">
+        
+        <div class="products-section">
+            <h2>Our Cuddly Friends</h2>
+            <div class="products-grid">
+                
+                <div class="product-card">
+                    <img src="Cute-Dalmatian-Doll-Big-Eared-Dog-Cartoon-Poodle-Doll.avif" alt="Fluffy Dalmatian Doll">
+                    <h3>Fluffy Dalmatian</h3>
+                    <p>A super soft, big-eared puppy doll. Perfect for hugging!</p>
+                    <p class="price">$18.50</p>
+                    <button onclick="addToCart('Fluffy Dalmatian', 18.50)">Add to Cart</button>
                 </div>
-                <p class="price">$12.00</p>
-            </div>
 
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1585336261022-680e295ce3fe?w=400&q=80" alt="Premium Gel Pen Set">
-                <div>
-                    <h3>Premium Gel Pen Set</h3>
-                    <p>Set of 3 smooth-writing black gel pens. Smudge-proof!</p>
+                <div class="product-card">
+                    <img src="619e8BkmsGL._AC_UF894,1000_QL80_.jpg" alt="Elegant White Bunny">
+                    <h3>Elegant White Bunny</h3>
+                    <p>A beautiful white rabbit plush with long floppy ears and a cute bow.</p>
+                    <p class="price">$22.00</p>
+                    <button onclick="addToCart('Elegant White Bunny', 22.00)">Add to Cart</button>
                 </div>
-                <p class="price">$5.50</p>
-            </div>
 
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1620662736427-b8a198f51ec5?w=400&q=80" alt="Everyday Ballpoint Pens">
-                <div>
-                    <h3>Everyday Ballpoint Pens</h3>
-                    <p>A trusty 5-pack of blue ballpoint pens. Super affordable and long-lasting.</p>
-                </div>
-                <p class="price">$2.99</p>
             </div>
-
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1520006403909-838d6b92c22e?w=400&q=80" alt="Cute Orca Pen">
-                <div>
-                    <h3>Cute Orca Gel Pen</h3>
-                    <p>A single fine-tip pen featuring our cute store mascot. Writes beautifully.</p>
-                </div>
-                <p class="price">$1.50</p>
-            </div>
-
         </div>
 
-        <div class="order-section">
-            <h2>Place an Order</h2>
+        <div class="cart-section">
+            <h2>Your Cart 🛒</h2>
             
-            <form action="https://formspree.io/f/YOUR_FORM_ID_HERE" method="POST">
+            <ul id="cart-items">
+                <li style="color: #7f8c8d;">Your cart is empty.</li>
+            </ul>
+            
+            <div class="cart-total" id="cart-total">
+                Total: $0.00
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+            <h3>Checkout Details</h3>
+            
+            <form action="https://formspree.io/f/YOUR_FORM_ID_HERE" method="POST" id="order-form">
                 
                 <div class="form-group">
                     <label for="name">Full Name:</label>
-                    <input type="text" id="name" name="name" required>
+                    <input type="text" id="name" name="Customer Name" required>
                 </div>
 
                 <div class="form-group">
                     <label for="email">Email Address:</label>
-                    <input type="email" id="email" name="email" required>
+                    <input type="email" id="email" name="Customer Email" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="product">Select Product:</label>
-                    <select id="product" name="product" required>
-                        <option value="">-- Please choose an option --</option>
-                        <option value="Classic Notebook">Classic Notebook ($12.00)</option>
-                        <option value="Premium Gel Pen Set">Premium Gel Pen Set ($5.50)</option>
-                        <option value="Everyday Ballpoint Pens">Everyday Ballpoint Pens 5-Pack ($2.99)</option>
-                        <option value="Cute Orca Gel Pen">Cute Orca Gel Pen ($1.50)</option>
-                    </select>
+                    <label for="address">Shipping Address:</label>
+                    <textarea id="address" name="Shipping Address" rows="2" required></textarea>
                 </div>
 
-                <div class="form-group">
-                    <label for="quantity">Quantity:</label>
-                    <input type="number" id="quantity" name="quantity" min="1" value="1" required>
-                </div>
+                <textarea id="cart-data" name="Order Details"></textarea>
 
-                <div class="form-group">
-                    <label for="message">Special Instructions or Message:</label>
-                    <textarea id="message" name="message" rows="4"></textarea>
-                </div>
-
-                <button type="submit">Submit Order</button>
+                <button type="submit" class="checkout-btn">Place Order</button>
             </form>
         </div>
+
     </div>
+
+    <script>
+        // This array will hold the items the user clicks
+        let shoppingCart = [];
+
+        // Function 1: Add item to cart
+        function addToCart(itemName, itemPrice) {
+            // Check if the item is already in the cart
+            let existingItem = shoppingCart.find(item => item.name === itemName);
+            
+            if (existingItem) {
+                existingItem.quantity += 1; // Increase amount
+            } else {
+                shoppingCart.push({ name: itemName, price: itemPrice, quantity: 1 }); // Add new item
+            }
+            
+            updateCartDisplay();
+        }
+
+        // Function 2: Remove item from cart
+        function removeFromCart(itemName) {
+            shoppingCart = shoppingCart.filter(item => item.name !== itemName);
+            updateCartDisplay();
+        }
+
+        // Function 3: Update the screen and do the math
+        function updateCartDisplay() {
+            const cartList = document.getElementById('cart-items');
+            const totalDisplay = document.getElementById('cart-total');
+            const hiddenCartData = document.getElementById('cart-data');
+            
+            // Clear current list
+            cartList.innerHTML = '';
+            let grandTotal = 0;
+            let textForEmail = "ORDER SUMMARY:\\n\\n"; // This goes to your email
+
+            if (shoppingCart.length === 0) {
+                cartList.innerHTML = '<li style="color: #7f8c8d;">Your cart is empty.</li>';
+                totalDisplay.innerText = 'Total: $0.00';
+                hiddenCartData.value = '';
+                return;
+            }
+
+            // Loop through the cart and build the HTML and the Math
+            shoppingCart.forEach(item => {
+                let itemTotal = item.price * item.quantity;
+                grandTotal += itemTotal;
+                
+                // Add to email text
+                textForEmail += `- ${item.quantity}x ${item.name} ($${itemTotal.toFixed(2)})\\n`;
+
+                // Add to webpage list
+                let li = document.createElement('li');
+                li.innerHTML = `
+                    <span><b>${item.quantity}x</b> ${item.name}</span>
+                    <span>
+                        $${itemTotal.toFixed(2)} 
+                        <button class="remove-btn" onclick="removeFromCart('${item.name}')">X</button>
+                    </span>
+                `;
+                cartList.appendChild(li);
+            });
+
+            // Update Total Price on screen
+            totalDisplay.innerText = `Total: $${grandTotal.toFixed(2)}`;
+            
+            // Update hidden form field so Formspree emails you the cart contents and total
+            textForEmail += `\\nGRAND TOTAL: $${grandTotal.toFixed(2)}`;
+            hiddenCartData.value = textForEmail;
+        }
+
+        // Make sure the form can't be submitted if the cart is empty
+        document.getElementById('order-form').addEventListener('submit', function(event) {
+            if (shoppingCart.length === 0) {
+                event.preventDefault(); // Stop the form from sending
+                alert("Your cart is empty! Please add some cute dolls first.");
+            }
+        });
+    </script>
 
 </body>
 </html>
