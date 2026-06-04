@@ -306,25 +306,25 @@
             hiddenCartData.value = textForEmail;
         }
 
+        // 攔截表單，讓網頁留在原地
         const form = document.getElementById('order-form');
         
         form.addEventListener('submit', function(event) {
-            
-            // --- TEMPORARILY DISABLED SO WE CAN PASS THE CAPTCHA TEST ---
-            // event.preventDefault(); 
+            // 這行非常重要！它會阻止網頁跳轉到 Formspree
+            event.preventDefault(); 
 
             if (shoppingCart.length === 0) {
                 alert("Your cart is empty! Please add some cute dolls first.");
-                event.preventDefault(); // Keep this one active to prevent empty orders
                 return;
             }
 
             const submitBtn = document.getElementById('submit-btn');
-            submitBtn.innerText = "Sending Order...";
+            submitBtn.innerText = "Sending...";
             submitBtn.disabled = true;
 
             const data = new FormData(form);
             
+            // 在背景悄悄把資料傳給 Formspree
             fetch(form.action, {
                 method: form.method,
                 body: data,
@@ -333,7 +333,11 @@
                 }
             }).then(response => {
                 if (response.ok) {
-                    document.getElementById('success-message').style.display = 'block';
+                    // 成功！顯示 order success 訊息
+                    const successMsg = document.getElementById('success-message');
+                    successMsg.innerText = "🎉 order success";
+                    successMsg.style.display = 'block';
+                    
                     form.reset();
                     
                     shoppingCart.forEach(item => {
@@ -345,15 +349,16 @@
                     shoppingCart = [];
                     updateCartDisplay();
 
+                    // 5秒後自動隱藏成功訊息
                     setTimeout(() => {
-                        document.getElementById('success-message').style.display = 'none';
+                        successMsg.style.display = 'none';
                     }, 5000);
                     
                 } else {
-                    // Do nothing on fetch error for now, as the page will redirect to Formspree
+                    alert("Oops! 傳送失敗，請檢查你是否已經去信箱點擊了 Formspree 的啟用信！");
                 }
             }).catch(error => {
-                // Do nothing on fetch error for now
+                alert("Oops! 傳送失敗，可能是瀏覽器安全設定擋住了背景發送。");
             }).finally(() => {
                 submitBtn.innerText = "Place Order";
                 submitBtn.disabled = false;
