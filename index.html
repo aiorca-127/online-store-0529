@@ -306,24 +306,23 @@
             hiddenCartData.value = textForEmail;
         }
 
-        // NEW: Intercept the form submission to prevent redirecting
         const form = document.getElementById('order-form');
         
         form.addEventListener('submit', function(event) {
-            // 1. Stop the default behavior (which causes the redirect)
-            event.preventDefault(); 
+            
+            // --- TEMPORARILY DISABLED SO WE CAN PASS THE CAPTCHA TEST ---
+            // event.preventDefault(); 
 
             if (shoppingCart.length === 0) {
                 alert("Your cart is empty! Please add some cute dolls first.");
-                return; // Stop here if cart is empty
+                event.preventDefault(); // Keep this one active to prevent empty orders
+                return;
             }
 
-            // 2. Change button text so user knows it is loading
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.innerText = "Sending Order...";
             submitBtn.disabled = true;
 
-            // 3. Send the data silently in the background using fetch()
             const data = new FormData(form);
             
             fetch(form.action, {
@@ -334,11 +333,9 @@
                 }
             }).then(response => {
                 if (response.ok) {
-                    // 4. Success! Show message, clear cart, reset form
                     document.getElementById('success-message').style.display = 'block';
                     form.reset();
                     
-                    // Reset all product buttons
                     shoppingCart.forEach(item => {
                         let btn = document.getElementById(item.btnId);
                         btn.innerText = "Add to Cart";
@@ -348,18 +345,16 @@
                     shoppingCart = [];
                     updateCartDisplay();
 
-                    // Hide the success message after 5 seconds
                     setTimeout(() => {
                         document.getElementById('success-message').style.display = 'none';
                     }, 5000);
                     
                 } else {
-                    alert("Oops! There was a problem submitting your order.");
+                    // Do nothing on fetch error for now, as the page will redirect to Formspree
                 }
             }).catch(error => {
-                alert("Oops! There was a problem submitting your order.");
+                // Do nothing on fetch error for now
             }).finally(() => {
-                // Restore the submit button
                 submitBtn.innerText = "Place Order";
                 submitBtn.disabled = false;
             });
