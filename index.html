@@ -10,19 +10,18 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f0f8ff; /* Alice Blue background */
+            background-color: #f0f8ff; 
             color: #333;
         }
 
         header {
-            background-color: #1a5276; /* Orca Blue */
+            background-color: #1a5276; 
             color: white;
             text-align: center;
             padding: 2rem 0;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* Layout for Desktop: Products on left, Cart on right */
         .main-container {
             display: flex;
             flex-wrap: wrap;
@@ -33,21 +32,20 @@
         }
 
         .products-section {
-            flex: 2; /* Takes up more space */
+            flex: 2; 
             min-width: 300px;
         }
 
         .cart-section {
-            flex: 1; /* Takes up less space */
+            flex: 1; 
             min-width: 300px;
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            align-self: flex-start; /* Keeps it at the top */
+            align-self: flex-start; 
         }
 
-        /* Product Cards */
         .products-grid {
             display: flex;
             flex-wrap: wrap;
@@ -58,7 +56,7 @@
             background: white;
             border-radius: 8px;
             padding: 15px;
-            width: calc(50% - 10px); /* 2 items per row */
+            width: calc(50% - 10px); 
             box-sizing: border-box;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             text-align: center;
@@ -76,12 +74,11 @@
 
         .price {
             font-size: 1.3rem;
-            color: #e67e22; /* Warm orange for price */
+            color: #e67e22; 
             font-weight: bold;
             margin: 10px 0;
         }
 
-        /* Buttons */
         button {
             background-color: #3498db;
             color: white;
@@ -96,11 +93,11 @@
         button:hover { background-color: #2980b9; }
         
         button:disabled {
-            background-color: #95a5a6; /* Gray color */
+            background-color: #95a5a6; 
             cursor: not-allowed;
         }
         button:disabled:hover {
-            background-color: #95a5a6; /* Stays gray when hovering */
+            background-color: #95a5a6; 
         }
         
         .remove-btn {
@@ -112,7 +109,6 @@
         .remove-btn:hover { background-color: #c0392b; }
         .remove-btn:disabled { display: none; }
 
-        /* Cart Styling */
         #cart-items {
             list-style-type: none;
             padding: 0;
@@ -135,7 +131,6 @@
             color: #2c3e50;
         }
 
-        /* Form Styling */
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
         input, textarea {
@@ -150,7 +145,6 @@
         
         #cart-data { display: none; }
 
-        /* NEW: Success Message Styling */
         #success-message {
             display: none;
             background-color: #d4edda;
@@ -211,7 +205,7 @@
 
             <h3>Checkout Details</h3>
             
-            <div id="success-message">🎉 Order placed successfully! Check your email.</div>
+            <div id="success-message">🎉 order success</div>
 
             <form action="https://formspree.io/f/xgoqqwkg" method="POST" id="order-form">
                 
@@ -232,7 +226,7 @@
 
                 <textarea id="cart-data" name="Order Details"></textarea>
 
-                <button type="submit" class="checkout-btn" id="submit-btn">Place Order</button>
+                <button type="button" class="checkout-btn" id="submit-btn">Place Order</button>
             </form>
         </div>
 
@@ -306,25 +300,31 @@
             hiddenCartData.value = textForEmail;
         }
 
-        // 攔截表單，讓網頁留在原地
+        // --- NEW JAVASCRIPT TO PREVENT REDIRECT ---
+        const submitBtn = document.getElementById('submit-btn');
         const form = document.getElementById('order-form');
         
-        form.addEventListener('submit', function(event) {
-            // 這行非常重要！它會阻止網頁跳轉到 Formspree
-            event.preventDefault(); 
-
+        submitBtn.addEventListener('click', function() {
+            
+            // 1. Check if cart is empty
             if (shoppingCart.length === 0) {
                 alert("Your cart is empty! Please add some cute dolls first.");
                 return;
             }
 
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.innerText = "Sending...";
+            // 2. Check if name/email/address are filled in
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // 3. Update button to show loading state
+            submitBtn.innerText = "Sending Order...";
             submitBtn.disabled = true;
 
             const data = new FormData(form);
             
-            // 在背景悄悄把資料傳給 Formspree
+            // 4. Send the data silently in the background
             fetch(form.action, {
                 method: form.method,
                 body: data,
@@ -333,9 +333,8 @@
                 }
             }).then(response => {
                 if (response.ok) {
-                    // 成功！顯示 order success 訊息
+                    // Success! Show the green order success message
                     const successMsg = document.getElementById('success-message');
-                    successMsg.innerText = "🎉 order success";
                     successMsg.style.display = 'block';
                     
                     form.reset();
@@ -349,22 +348,22 @@
                     shoppingCart = [];
                     updateCartDisplay();
 
-                    // 5秒後自動隱藏成功訊息
+                    // Hide the success message after 5 seconds
                     setTimeout(() => {
                         successMsg.style.display = 'none';
                     }, 5000);
                     
                 } else {
-                    alert("Oops! 傳送失敗，請檢查你是否已經去信箱點擊了 Formspree 的啟用信！");
+                    alert("Oops! There was a problem submitting your order.");
                 }
             }).catch(error => {
-                alert("Oops! 傳送失敗，可能是瀏覽器安全設定擋住了背景發送。");
+                alert("Oops! There was a problem submitting your order. Please check your internet connection.");
             }).finally(() => {
+                // Reset the submit button back to normal
                 submitBtn.innerText = "Place Order";
                 submitBtn.disabled = false;
             });
         });
     </script>
-
 </body>
 </html>
